@@ -1,0 +1,10 @@
+services:
+
+  cg-frontend:
+    build:
+      context: .
+      dockerfile: ./docker/node/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
