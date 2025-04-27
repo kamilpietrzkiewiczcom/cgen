@@ -99,6 +99,8 @@ export default function Home() {
         addPropertyToConstructor: isAddPropertyToConstructor
       };
 
+      setAssertions([]);
+
       return [...prevState, property];
     });
   }
@@ -325,7 +327,7 @@ export default function Home() {
               return <>
                 <br />
                 <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>
-                {assertion.visibility} function assert{getAssertionName(assertion.name)}(${property.name})
+                {assertion.visibility} function assert{getAssertionName(assertion.name)}({property.type} ${property.name})
                 <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>{"{"}
 
                 <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>{"}"}
