@@ -16,7 +16,8 @@ type Property = {
   visibility: string,
   type: string,
   name: string,
-  assertions: Assertion[]
+  assertions: Assertion[],
+  addPropertyToConstructor: boolean,
 }
 
 export default function Home() {
@@ -40,6 +41,8 @@ export default function Home() {
   const [propertyAssertionVisibility, setPropertyAssertionVisibility] = useState<string>("private");
 
   const [isAddPropertyToConstructor, setIsAddPropertyToConstructor] = useState<boolean>(true);
+
+  const [isAddConstructor, setIsAddConstructor] = useState<boolean>(false);
 
   const [properties, setProperties] = useState<Property[]>([]);
 
@@ -80,7 +83,6 @@ export default function Home() {
       }
 
       if (isVariablePresent) {
-        alert("Variable exists");
         return [...prevState];
       }
 
@@ -94,6 +96,7 @@ export default function Home() {
         type: propertyType,
         name: propertyName,
         assertions: assertions,
+        addPropertyToConstructor: isAddPropertyToConstructor
       };
 
       return [...prevState, property];
@@ -132,6 +135,10 @@ export default function Home() {
     setPropertyAssertionName(event.target.value);
   }
 
+  const onIsAddConstructorHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsAddConstructor(event.target.checked);
+  }
+
   const getClassName = useCallback((className: string) => {
     if (className === "") {return ""}
     return className[0].toUpperCase() + className.substring(1, className.length);
@@ -141,6 +148,22 @@ export default function Home() {
     if (propertyName === "") {return ""}
     return propertyName[0].toUpperCase() + propertyName.substring(1, propertyName.length);
   };
+
+  const getAssertionName = (assertionName: string) => {
+    if (assertionName === "") {return ""}
+    return assertionName[0].toUpperCase() + assertionName.substring(1, assertionName.length);
+  };
+
+  const addPropertyAssertionHandler = () => {
+    setAssertions((assertions) => {
+      const assertion: Assertion = {
+        name: propertyAssertionName,
+        visibility: propertyAssertionVisibility
+      }
+
+      return [...assertions, assertion];
+    });
+  }
 
   return <>
     <div>
@@ -155,6 +178,12 @@ export default function Home() {
       <label>
         Class name
         <input type={"text"} name={"classname"} value={className} onChange={updateClassNameHandler} />
+      </label>
+    </div>
+    <div>
+      <label>
+        Add constructor
+        <input type={"checkbox"} name={"is-add-constructor"} checked={isAddConstructor} onChange={onIsAddConstructorHandler} />
       </label>
     </div>
     <div>
@@ -202,10 +231,11 @@ export default function Home() {
           </select>
         </label>
       </div>
+      {isAddConstructor &&
       <div>
         <label>
           Add property assertion
-          <input type={"checkbox"} name={"is-add-property-assertion"} checked={isPropertySetterSet} onChange={onAddPropertyAssertionHandler} />
+          <input type={"checkbox"} name={"is-add-property-assertion"} checked={isPropertyAssertionSet} onChange={onAddPropertyAssertionHandler} />
         </label>
         <label>
           Assertion name
@@ -219,7 +249,8 @@ export default function Home() {
             <option value={"protected"}>protected</option>
           </select>
         </label>
-      </div>
+        <button onClick={addPropertyAssertionHandler}>Add assertion</button>
+      </div>}
       <div>
         {assertions.map((assertion) => {
           return <div>
@@ -247,13 +278,69 @@ export default function Home() {
             return <div><span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>{property.visibility} {property.type} ${property.name};</div>
           })}
 
+        {isAddConstructor && <div>
+          <br />
+          <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>public function __construct(
+            {properties.map((property: Property) => {
+              if (!property.addPropertyToConstructor) {
+                return <></>;
+              }
+
+              return <div><span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span><span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>{property.type} ${property.name},</div>
+            })}
+            <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>) {"{"}
+
+            {properties.map((property) => {
+              return <>
+                {property.assertions.map((assertion) => {
+                  return <>
+                    <br />
+                    <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>
+                    <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>
+                    $this->assert{getAssertionName(assertion.name)}(${property.name});
+                    </>
+                })}
+              </>
+            })}
+
+
+          {properties.map((property: Property) => {
+              if (!property.addSetterToConstruct) {
+                return <></>;
+              }
+
+              return <div>
+                <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span><span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>
+                $this->{property.name}Equals(${property.name});
+              </div>
+            })}
+
+          <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>{"}"}
+        </div>}
+
+
+        {properties.map((property) => {
+          return <>
+            {property.assertions.map((assertion) => {
+              return <>
+                <br />
+                <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>
+                {assertion.visibility} function assert{getAssertionName(assertion.name)}(${property.name})
+                <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>{"{"}
+
+                <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>{"}"}
+              </>
+            })}
+          </>
+        })}
+
 
         {properties.map((property: Property) => {
           if (!property.isSetter) {
             return <></>;
           }
 
-          return <><br /><div>
+          return <><br /><br /><div>
             <span dangerouslySetInnerHTML={{__html: "&nbsp;&nbsp;&nbsp;&nbsp;"}}></span>
             {property.setterVisibility} function {property.name}Equals({property.type} ${property.name}): void
             <br />
@@ -268,7 +355,7 @@ export default function Home() {
 
 
         {properties.map((property: Property) => {
-          if (!property.isSetter) {
+          if (!property.isGetter) {
             return <></>;
           }
 
