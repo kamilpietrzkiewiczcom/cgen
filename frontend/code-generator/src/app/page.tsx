@@ -1,6 +1,7 @@
 "use client"
 import React, {useCallback, useState} from "react";
 import {Property} from "csstype";
+import Link from "next/link";
 
 type Assertion = {
   visibility: string,
@@ -168,6 +169,16 @@ export default function Home() {
   }
 
   return <>
+    <div>
+      <Link href={"/"}>
+        <button>Class</button>
+      </Link>
+
+      <Link href={"/exception"}>
+        <button>Exception</button>
+      </Link>
+    </div>
+
     <div>
       <label>
         Is class final
